@@ -9,28 +9,24 @@ VALUES
 INSERT INTO roles
   (title, salary, department_id)
 VALUES
-('Sales Lead', 100000, 1),
-('Salesperson', 80000, 1),
-('Software Engineer'),
-    ('Software Engineer'),
-    ('Account Manager'),
-    ('Accountant'),
-    ('Legal Team Lead'),
-    ('Lawyer');
-  ('JS Juggernauts', 'The JS Juggernauts eat, breathe, and sleep JavaScript. They can build everything you could ever want in JS, including a new kitchen sink.'),
-  ('Heroes of HTML', 'Want to see a mock-up turn into an actual webpage in a matter of minutes? Well, the Heroes of HTML can get it done in a matter of seconds.'),
-  ('Git Gurus', 'Need to resolve a merge conflict? The Git Gurus have your back. Nobody knows Git like these folks do.');
+    ('Sales Lead', 100000, 1),
+    ('Salesperson', 80000, 1),
+    ('Lead Engineer', 150000, 2),
+    ('Software Engineer', 120000, 2),
+    ('Account Manager', 160000, 3),
+    ('Accountant', 125000, 3),
+    ('Legal Team Lead', 250000, 4),
+    ('Lawyer', 190000, 4);
 
 INSERT INTO seeds
-  (first_name, last_name, party_id, industry_connected)
+  (first_name, last_name, role_id, manager_id)
 VALUES
-  ('Ronald', 'Firbank', 1, 1),
-  ('Virginia', 'Woolf', 1, 1),
-  ('Piers', 'Gaveston', 1, 0),
-  ('Charles', 'LeRoi', 2, 1),
-  ('Katherine', 'Mansfield', 2, 1),
-  ('Dora', 'Carrington', 3, 0),
-  ('Edward', 'Bellamy', 3, 0),
-  ('Montague', 'Summers', 3, 1),
-  ('Octavia', 'Butler', 3, 1),
-  ('Unica', 'Zurn', NULL, 1);
+  ('John', 'Doe', 1, NULL),
+  ('Mike', 'Chan', 2, 1),
+  ('Ashley', 'Rodriguez', 3, NULL),
+  ('Kevin', 'Tupik', 4, 3),
+  ('Kunal', 'Singh', 5, NULL),
+  ('Malia', 'Brown', 6, 5),
+  ('Sarah', 'Lourd', 7, NULL),
+  ('Tom', 'Allen', 8, 7),
+  ('Sam', 'Kasj', 1, 3);
