@@ -22,7 +22,7 @@ db.connect(err => {
 });
 
 
-function showMainMenu(){
+async function showMainMenu(){
     return inquirer.prompt([
     {
         type: "list",
@@ -36,52 +36,97 @@ function showMainMenu(){
 
     switch (choice.choice){
         case "view all departments":
-            console.log("view all deptments called");
+            viewDepartments();
             break;
         case "view all roles":
-            console.log("view all roles called");
+            viewRoles();
             break;
         case "view all employees":
-            console.log("view all employees called");
+            viewEmployees();
             break;
+            case "view employees by manager":
+                viewByMgr();
+                break;
+            case "view employess by department":
+                viewByDept();
+                break;
         case "add a department":
-            console.log("add a departmentcalled");
+            addDept();
             break;
         case "add a role":
-            console.log("add a role called");
+            addRole();
             break;
         case "add an employee":
-            console.log("add an employee called");
+            addEmployee();
             break;
         case "update an employee role":
-            console.log("update an employee role called");
+            updateRole();
             break;
     }
 });
 // GET a single candidate
 
-function viewDepartments(){
-
+async function viewDepartments(){
+    db.query(`SELECT * FROM departments`, (err, row) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log(row);
+      });
 }
 
-function viewRoles(){
-
+async function viewRoles(){
+    db.query(`SELECT * FROM roles`, (err, row) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log(row);
+      });
 }
 
-function viewEmployees(){
-
+async function viewEmployees(){
+    db.query(`SELECT * FROM employees`, (err, row) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log(row);
+      });
 }
 
-function addRole(){
-
+async function viewByMgr(){
+    db.query(`SELECT * FROM employees`, (err, row) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log(row);
+      });
 }
 
-function addEmployee(){
+async function viewByDept(){
+    db.query(`SELECT * FROM employees`, (err, row) => {
+        if (err) {
+          console.log(err);
+        }
+        console.log(row);
+      });
+}
+async function addDept(deptName){
+    db.query(`INSERT INTO departments (dept_name)
+    VALUES (${deptName})`);
+}
 
+async function addRole(title, salary, department_id){
+    db.query(`INSERT INTO roles (title, salary, department_id)
+    VALUES (${title, salary, department_id})`);
+}
+
+async function addEmployee(first_name, last_name, role_id, manager_id){
+    db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id)
+    VALUES (${first_name, last_name, role_id, manager_id})`);
 }
 
 function updateRole(){
-
+    db.query(`ALTER TABLE candidates ADD COLUMN party_id INTEGER`);
 }
 
 function updateManager(){
