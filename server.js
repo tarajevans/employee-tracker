@@ -4,6 +4,7 @@ const db=require("./db/connection");
 const apiRoutes=require("./routes/apiRoutes");
 const PORT=process.env.PORT || 3001;
 const app=express();
+const baseUrl = "http://localhost:3001/api";
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json);
@@ -57,8 +58,17 @@ function showMainMenu(){
             break;
     }
 });
+// GET a single candidate
 
-function addDepartment(){
+function viewDepartments(){
+
+}
+
+function viewRoles(){
+
+}
+
+function viewEmployees(){
 
 }
 
