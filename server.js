@@ -14,7 +14,7 @@ return inquirer.prompt([
     type: "list",
     name: "choice",
     message: "Choose one of the following",
-    choices: ["view all departments", "view all roles", "view all employees", "view all employees by manager", 
+    choices: ["view all departments", "view all roles", "view all employees", /*"view all employees by manager", */
             "add a department", "add a role", "add an employee", "update an employee role", "update employee's manager"],
 },
 ]).then((choice) => {
@@ -31,9 +31,9 @@ switch (choice.choice){
         viewEmployees();
         break;
 
-    case "view all employees by manager":
-        viewByMgr();
-        break;
+    // case "view all employees by manager":
+    //     viewByMgr();
+    //     break;
 
     case "add a department":
         addDept();
@@ -79,10 +79,11 @@ LEFT JOIN departments ON roles.department_id = departments.id`, (err, row) => {
 }
 
 function viewEmployees(){
-db.query(`SELECT emp1.*, departments.dept_name AS department, roles.title AS role, emp2.first_name + ' ' + emp2.last_name AS name
-FROM employees emp1, roles, departments
-LEFT JOIN departments dept ON roles.department_id = dept.id
-LEFT JOIN employees emp2 ON emp1.manager_id = emp2.id `, (err, row) => {
+db.query(`SELECT employees.id, employees.first_name AS First, employees.last_name AS Last, roles.title AS Title, departments.dept_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name,' ', manager.last_name) AS Manager
+FROM employees
+LEFT JOIN employees manager on manager.id = employees.manager_id
+INNER JOIN roles ON employees.role_id = roles.id
+INNER JOIN departments ON departments.id = roles.department_id;`, (err, row) => {
     if (err) {
       console.log(err);
     }
@@ -93,17 +94,17 @@ LEFT JOIN employees emp2 ON emp1.manager_id = emp2.id `, (err, row) => {
   });
 }
 
-function viewByMgr(){
-db.query(`SELECT * FROM employees`, (err, row) => {
-    if (err) {
-      console.log(err);
-    }
+// function viewByMgr(){
+// db.query(`SELECT * FROM employees`, (err, row) => {
+//     if (err) {
+//       console.log(err);
+//     }
     
-    for (let i = 0; i < row.length; i++) {
-        console.log(row[i]);
-    }
-  });
-}
+//     for (let i = 0; i < row.length; i++) {
+//         console.log(row[i]);
+//     }
+//   });
+// }
 
 async function addDept(){
 return await inquirer.prompt([
