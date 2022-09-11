@@ -66,7 +66,9 @@ db.query(`SELECT dept_name FROM departments`, (err, row) => {
 }
 
 function viewRoles(){
-db.query(`SELECT title, id, salary, department_id FROM roles`, (err, row) => {
+db.query(`SELECT roles.*, departments.dept_name AS department
+FROM roles 
+LEFT JOIN departments ON roles.department_id = departments.id`, (err, row) => {
     if (err) {
       console.log(err);
     }
@@ -77,7 +79,10 @@ db.query(`SELECT title, id, salary, department_id FROM roles`, (err, row) => {
 }
 
 function viewEmployees(){
-db.query(`SELECT * FROM employees`, (err, row) => {
+db.query(`SELECT emp1.*, departments.dept_name AS department, roles.title AS role, emp2.first_name + ' ' + emp2.last_name AS name
+FROM employees emp1, roles, departments
+LEFT JOIN departments dept ON roles.department_id = dept.id
+LEFT JOIN employees emp2 ON emp1.manager_id = emp2.id `, (err, row) => {
     if (err) {
       console.log(err);
     }
