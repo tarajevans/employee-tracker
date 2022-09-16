@@ -15,7 +15,7 @@ return inquirer.prompt([
     name: "choice",
     message: "Choose one of the following",
     choices: ["view all departments", "view all roles", "view all employees", /*"view all employees by manager", */
-            "add a department", "add a role", "add an employee", "update an employee role", "update employee's manager"],
+            "add a department", "add a role", "add an employee", "update an employee role", "update employee's manager","quit"],
 },
 ]).then((choice) => {
 switch (choice.choice){
@@ -51,6 +51,9 @@ switch (choice.choice){
         break;
     case "update employee's manager":
       updateManager();
+      case "quit":
+        quit();
+        break;
 }
 });
 }
@@ -201,6 +204,14 @@ return inquirer.prompt([
 
 function addEmployee(first_name, last_name, role_id, manager_id){
 
+  db.promise().query(`SELECT roles.id, roles.title FROM roles`).then(([rows])=>{
+    let roles = rows;
+    const roleChoices = roles.map(({id, title}) => ({
+      name: title,
+      value: id
+    }));
+
+
 return inquirer.prompt([
     {
         type: 'input',
@@ -229,17 +240,10 @@ return inquirer.prompt([
         }
       },
       {
-        type: 'input',
-        name: 'role_id',
+        type: 'list',
+        name: 'Select the role for this employee',
         message: "Enter the role id for the new employee. (Required)",
-        validate: roleInput => {
-          if (roleInput) {
-            return true;
-          } else {
-            console.log("You need to enter the role id for the new employee.");
-            return false;
-          }
-        }
+        choices:roleChoices,
       },
       {
         type: 'input',
@@ -264,6 +268,7 @@ return inquirer.prompt([
             showMainMenu()
         });
         });
+      })
 }
 function updateRole(){
 
@@ -344,4 +349,8 @@ if (data.mgr == 'null'){
 showMainMenu();
 }
 );
+}
+
+function quit() {
+  process.exit();
 }
