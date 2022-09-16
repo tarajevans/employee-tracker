@@ -133,49 +133,61 @@ return await inquirer.prompt([
 }
 
 function addRole(){
+    db.promise().query(`SELECT departments.id, departments.dept_name FROM departments`).then(([rows])=>{
+      let departments = rows;
+      const deptChoices = departments.map(({id, dept_name}) => ({
+        name: dept_name,
+        value: id
+      }));
+    
 return inquirer.prompt([
     {
         type: 'input',
         name: 'title',
         message: "Enter the title for the new role. (Required)",
-        validate: titleInput => {
-          if (titleInput) {
-            return true;
-          } else {
-            console.log("You need to enter the title for the new role.");
-            return false;
-          }
-        }
+        // validate: titleInput => {
+        //   if (titleInput) {
+        //     return true;
+        //   } else {
+        //     console.log("You need to enter the title for the new role.");
+        //     return false;
+        //   }
+        // }
       },
       {
         type: 'input',
         name: 'salary',
         message: "Enter the salary for this role. (Required)",
-        validate: salaryInput => {
-          if (salaryInput) {
-            return true;
-          } else {
-            console.log("You need to enter the department name");
-            return false;
-          }
-        }
-      },
-      {
-        type: 'input',
-        name: 'dept_id',
-        message: "Enter the department id for the new role. (Required)",
-        validate: titleInput => {
-          if (titleInput) {
-            return true;
-          } else {
-            console.log("You need to enter the department id for the new role.");
-            return false;
-          }
-        }
-      },
+        // validate: salaryInput => {
+        //   if (salaryInput) {
+        //     return true;
+        //   } else {
+        //     console.log("You need to enter the department name");
+        //     return false;
+        //   }
+        // }
+      },{
+        type:'list',
+        name: 'dept',
+        message: 'Choose a department',
+        choices: deptChoices,
+      }
+      // {
+      //   type: 'input',
+      //   name: 'dept_id',
+      //   message: "Enter the department id for the new role. (Required)",
+      //   validate: titleInput => {
+      //     if (titleInput) {
+      //       return true;
+      //     } else {
+      //       console.log("You need to enter the department id for the new role.");
+      //       return false;
+      //     }
+      //   }
+      // },
     ]).then((role) => {
         console.log(role);
-        db.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${role.title}', ${role.salary}, ${role.dept_id})`, (err, row) => {
+        db.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${role.title}', ${role.salary}, ${role.dept})`, (err, row) => {
             if (err) {
               console.log(err);
             }else{
@@ -184,6 +196,7 @@ return inquirer.prompt([
             showMainMenu()
         });
         });
+      })
 }
 
 function addEmployee(first_name, last_name, role_id, manager_id){
@@ -254,33 +267,33 @@ return inquirer.prompt([
 }
 function updateRole(){
 
-return inquirer.prompt([
-{
-  type: 'input',
-  name: 'emp_id',
-  message: "Enter the employee id. (Required)",
-  validate: empIdInput => {
-    if (empIdInput) {
-      return true;
-    } else {
-      console.log("You need to enter the employee id.");
-      return false;
-    }
-  }
-},
-{
-  type: 'input',
-  name: 'role',
-  message: "Enter the employee's role. (Required)",
-  validate: roleInput => {
-    if (roleInput) {
-      return true;
-    } else {
-      console.log("You need to enter the the employee's role.");
-      return false;
-    }
-  }
-},
+  return inquirer.prompt([
+    {
+      type: 'input',
+      name: 'emp_id',
+      message: "Enter the employee id. (Required)",
+      validate: empIdInput => {
+        if (empIdInput) {
+          return true;
+        } else {
+          console.log("You need to enter the employee id.");
+          return false;
+        }
+      }
+    },
+    {
+      type: 'input',
+      name: 'role',
+      message: "Enter the employee's role. (Required)",
+      validate: roleInput => {
+        if (roleInput) {
+          return true;
+        } else {
+          console.log("You need to enter the the employee's role.");
+          return false;
+        }
+      }
+    },
 ]).then((data) => {
 db.query(`UPDATE employees SET role_id = '${data.role}' WHERE id = ${data.emp_id};`);
 showMainMenu();
