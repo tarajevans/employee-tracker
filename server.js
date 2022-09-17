@@ -14,7 +14,7 @@ return inquirer.prompt([
     type: "list",
     name: "choice",
     message: "Choose one of the following",
-    choices: ["view all departments", "view all roles", "view all employees", /*"view all employees by manager", */
+    choices: ["view all departments", "view all roles", "view all employees", "view all employees by manager",
             "add a department", "add a role", "add an employee", "update an employee role", "update employee's manager","quit"],
 },
 ]).then((choice) => {
@@ -31,9 +31,9 @@ switch (choice.choice){
         viewEmployees();
         break;
 
-    // case "view all employees by manager":
-    //     viewByMgr();
-    //     break;
+    case "view all employees by manager":
+        viewByMgr();
+        break;
 
     case "add a department":
         addDept();
@@ -51,6 +51,7 @@ switch (choice.choice){
         break;
     case "update employee's manager":
       updateManager();
+      break;
       case "quit":
         quit();
         break;
@@ -63,6 +64,7 @@ db.query(`SELECT dept_name FROM departments`, (err, row) => {
       console.log(err);
     }
     const table = cTable.getTable(row);
+    console.log('\n\n');
     console.log(table);
     showMainMenu();
   });
@@ -76,6 +78,7 @@ LEFT JOIN departments ON roles.department_id = departments.id`, (err, row) => {
       console.log(err);
     }
     const table = cTable.getTable(row);
+    console.log('\n\n');
     console.log(table);
     showMainMenu();
   });
@@ -91,23 +94,26 @@ INNER JOIN departments ON departments.id = roles.department_id;`, (err, row) => 
       console.log(err);
     }
     const table = cTable.getTable(row);
+    console.log('\n\n');
     console.log(table);
     showMainMenu();
     
   });
 }
 
-// function viewByMgr(){
-// db.query(`SELECT * FROM employees`, (err, row) => {
-//     if (err) {
-//       console.log(err);
-//     }
-    
-//     for (let i = 0; i < row.length; i++) {
-//         console.log(row[i]);
-//     }
-//   });
-// }
+function viewByMgr() {
+  db.query(`SELECT emp.last_name AS 'Employee Last Name', emp.first_name AS 'Employee First Name', CONCAT(mgr.first_name,' ', mgr.last_name) AS Manager
+                    FROM employees emp
+                    LEFT JOIN employees mgr
+                    ON emp.manager_id = mgr.id
+                    ORDER BY mgr.last_name, emp.last_name`, (err, res) => {
+                      if (err) throw err;
+                      console.log('\n\n');
+                      console.table(res);
+                      showMainMenu();
+  });
+
+}
 
 async function addDept(){
 return await inquirer.prompt([
@@ -148,48 +154,34 @@ return inquirer.prompt([
         type: 'input',
         name: 'title',
         message: "Enter the title for the new role. (Required)",
-        // validate: titleInput => {
-        //   if (titleInput) {
-        //     return true;
-        //   } else {
-        //     console.log("You need to enter the title for the new role.");
-        //     return false;
-        //   }
-        // }
+        validate: titleInput => {
+          if (titleInput) {
+            return true;
+          } else {
+            console.log("You need to enter the title for the new role.");
+            return false;
+          }
+        }
       },
       {
         type: 'input',
         name: 'salary',
         message: "Enter the salary for this role. (Required)",
-        // validate: salaryInput => {
-        //   if (salaryInput) {
-        //     return true;
-        //   } else {
-        //     console.log("You need to enter the department name");
-        //     return false;
-        //   }
-        // }
+        validate: salaryInput => {
+          if (salaryInput) {
+            return true;
+          } else {
+            console.log("You need to enter the department name");
+            return false;
+          }
+        }
       },{
         type:'list',
         name: 'dept',
         message: 'Choose a department',
         choices: deptChoices,
       }
-      // {
-      //   type: 'input',
-      //   name: 'dept_id',
-      //   message: "Enter the department id for the new role. (Required)",
-      //   validate: titleInput => {
-      //     if (titleInput) {
-      //       return true;
-      //     } else {
-      //       console.log("You need to enter the department id for the new role.");
-      //       return false;
-      //     }
-      //   }
-      // },
     ]).then((role) => {
-        console.log(role);
         db.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${role.title}', ${role.salary}, ${role.dept})`, (err, row) => {
             if (err) {
               console.log(err);
@@ -203,6 +195,71 @@ return inquirer.prompt([
 }
 
 function addEmployee(first_name, last_name, role_id, manager_id){
+  let roleChoices;
+  let mgrChoices;
+  db.promise().query(`SELECT roles.id, roles.title FROM roles`).then(([rows]) => {
+    let roles = rows;
+    roleChoices = roles.map(({ id, title}) => ({
+      name: title,
+      value: id
+    }));}).then(db.promise().query(`SELECT employees.id, CONCAT(employees.first_name, ' ', employees.last_name) AS name FROM employees WHERE manager_id IS NULL`).then(([rows]) => {
+      let managers = rows;
+      mgrChoices = managers.map(({ id, name}) => ({
+        name: name,
+        value: id
+      }));
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'first_name',
+            message: "Enter the first name of the new employee. (Required)",
+            validate: fNameInput => {
+              if (fNameInput) {
+                return true;
+              } else {
+                console.log("You need to enter the first name of the new employee.");
+                return false;
+              }
+            }
+          },
+          {
+            type: 'input',
+            name: 'last_name',
+            message: "Enter the last name of the new employee. (Required)",
+            validate: lNameInput => {
+              if (lNameInput) {
+                return true;
+              } else {
+                console.log("You need to enter the last name of the new employee.");
+                return false;
+              }
+            }
+          },
+          {
+            type: 'list',
+            name: 'role_id',
+            message: "select the role for this employee. (Required)",
+            choices:roleChoices,
+          },
+          {
+            type: 'list',
+            name: 'manager_id',
+            message: "Select a manager",
+            choices: mgrChoices,
+          },
+        ]).then((employee) => {
+            db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${employee.first_name}', '${employee.last_name}', ${employee.role_id}, ${employee.manager_id})`, (err, row) => {
+                if (err) {
+                  console.log(err);
+                }else{
+                    console.log("Employee Record Saved");
+                }
+                showMainMenu()
+            });
+            });
+          }))
+}
+function updateRole(){
 
   db.promise().query(`SELECT roles.id, roles.title FROM roles`).then(([rows])=>{
     let roles = rows;
@@ -210,67 +267,6 @@ function addEmployee(first_name, last_name, role_id, manager_id){
       name: title,
       value: id
     }));
-
-
-return inquirer.prompt([
-    {
-        type: 'input',
-        name: 'first_name',
-        message: "Enter the first name of the new employee. (Required)",
-        validate: fNameInput => {
-          if (fNameInput) {
-            return true;
-          } else {
-            console.log("You need to enter the first name of the new employee.");
-            return false;
-          }
-        }
-      },
-      {
-        type: 'input',
-        name: 'last_name',
-        message: "Enter the last name of the new employee. (Required)",
-        validate: lNameInput => {
-          if (lNameInput) {
-            return true;
-          } else {
-            console.log("You need to enter the last name of the new employee.");
-            return false;
-          }
-        }
-      },
-      {
-        type: 'list',
-        name: 'Select the role for this employee',
-        message: "Enter the role id for the new employee. (Required)",
-        choices:roleChoices,
-      },
-      {
-        type: 'input',
-        name: 'manager_id',
-        message: "Enter the manager id for the new employee. (Required)",
-        validate: managerInput => {
-          if (managerInput) {
-            return true;
-          } else {
-            console.log("You need to enter the manager id for the new employee.");
-            return false;
-          }
-        }
-      },
-    ]).then((employee) => {
-        db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${employee.first_name}', '${employee.last_name}', ${employee.role_id}, ${employee.manager_id})`, (err, row) => {
-            if (err) {
-              console.log(err);
-            }else{
-                console.log("Employee Record Saved");
-            }
-            showMainMenu()
-        });
-        });
-      })
-}
-function updateRole(){
 
   return inquirer.prompt([
     {
@@ -287,54 +283,49 @@ function updateRole(){
       }
     },
     {
+      type: 'list',
+      name: 'role_id',
+      message: "select the role for this employee. (Required)",
+      choices:roleChoices,
+
+    },
+]).then((data) => {
+db.query(`UPDATE employees SET role_id = '${data.role_id}' WHERE id = ${data.emp_id};`);
+showMainMenu();
+}
+);  
+})
+}
+
+function updateManager(){
+
+  db.promise().query(`SELECT employees.id, CONCAT(employees.first_name, ' ', employees.last_name) AS name FROM employees WHERE manager_id IS NULL`).then(([rows])=>{
+    let managers = rows;
+    const mgrChoices = managers.map(({ id, name}) => ({
+      name: name,
+      value: id
+    }));
+  return inquirer.prompt([
+    {
       type: 'input',
-      name: 'role',
-      message: "Enter the employee's role. (Required)",
-      validate: roleInput => {
-        if (roleInput) {
+      name: 'emp_id',
+      message: "Enter the employee id. (Required)",
+      validate: empIdInput => {
+        if (empIdInput) {
           return true;
         } else {
-          console.log("You need to enter the the employee's role.");
+          console.log("You need to enter the employee id.");
           return false;
         }
       }
     },
-]).then((data) => {
-db.query(`UPDATE employees SET role_id = '${data.role}' WHERE id = ${data.emp_id};`);
-showMainMenu();
-}
-);  
-}
-
-function updateManager(){
-return inquirer.prompt([
-{
-  type: 'input',
-  name: 'emp_id',
-  message: "Enter the employee id. (Required)",
-  validate: empIdInput => {
-    if (empIdInput) {
-      return true;
-    } else {
-      console.log("You need to enter the employee id.");
-      return false;
-    }
-  }
-},
-{
-  type: 'input',
-  name: 'mgr',
-  message: "Enter the employee's new manager's id.(enter null for none assigned manager) (Required)",
-  validate: mgrInput => {
-    if (mgrInput) {
-      return true;
-    } else {
-      console.log("You need to enter the the employee's new manager's id.");
-      return false;
-    }
-  }
-},
-]).then((data) => {
+    {
+      type: 'list',
+      name: 'mgr',
+      message: "Please select a manager",
+      choices: mgrChoices,
+    },
+  ]).then((data) => {
 let mgrId;
 
 if (data.mgr == 'null'){
@@ -348,7 +339,7 @@ if (data.mgr == 'null'){
   }
 showMainMenu();
 }
-);
+);})
 }
 
 function quit() {
